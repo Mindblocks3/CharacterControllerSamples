@@ -8,6 +8,7 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
 using Unity.CharacterController;
+using Unity.NetCode;
 
 [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
 [UpdateBefore(typeof(FixedStepSimulationSystemGroup))]
@@ -109,9 +110,9 @@ public partial struct PlatformerCharacterPhysicsUpdateSystem : ISystem
     }
 }
 
-[UpdateInGroup(typeof(SimulationSystemGroup))]
-[UpdateAfter(typeof(FixedStepSimulationSystemGroup))]
-[UpdateBefore(typeof(TransformSystemGroup))]
+[UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+[UpdateAfter(typeof(PredictedFixedStepSimulationSystemGroup))]
+[UpdateAfter(typeof(PlatformerPlayerVariableStepControlSystem))]
 [BurstCompile]
 public partial struct PlatformerCharacterVariableUpdateSystem : ISystem
 {
