@@ -2,10 +2,11 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 
-[Serializable]
+[GhostComponent]
 public struct OrbitCamera : IComponentData
 {
     public float RotationSpeed;
@@ -25,10 +26,13 @@ public struct OrbitCamera : IComponentData
     
     public float CameraTargetTransitionTime;
     
+    [GhostField]
     public float TargetDistance;
     public float SmoothedTargetDistance;
     public float ObstructedDistance;
+    [GhostField]
     public float PitchAngle;
+    [GhostField]
     public float3 PlanarForward;
     
     public Entity ActiveCameraTarget;

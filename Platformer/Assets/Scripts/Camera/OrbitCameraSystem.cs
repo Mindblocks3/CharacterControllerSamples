@@ -8,11 +8,14 @@ using Unity.Physics;
 using Unity.Physics.Systems;
 using Unity.Transforms;
 using Unity.CharacterController;
+using Unity.NetCode;
 using UnityEngine;
 
-[UpdateInGroup(typeof(SimulationSystemGroup))]
-[UpdateAfter(typeof(TransformSystemGroup))]
-[UpdateBefore(typeof(EndSimulationEntityCommandBufferSystem))]
+[UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+[UpdateAfter(typeof(PredictedFixedStepSimulationSystemGroup))]
+[UpdateAfter(typeof(PlatformerPlayerVariableStepControlSystem))]
+[UpdateAfter(typeof(PlatformerCharacterVariableUpdateSystem))]
+[BurstCompile]
 public partial struct OrbitCameraSystem : ISystem
 {
     public struct CameraObstructionHitsCollector : ICollector<ColliderCastHit>
