@@ -287,3 +287,14 @@ public partial struct OrbitCameraSystem : ISystem
         }
     }
 }
+
+public static class OrbitCameraUtilities
+{
+    public static quaternion CalculateCameraRotation(float3 targetUp, float3 planarForward, float pitchAngle)
+    {
+        quaternion pitchRotation = quaternion.Euler(math.right() * math.radians(pitchAngle));
+        quaternion cameraRotation = MathUtilities.CreateRotationWithUpPriority(targetUp, planarForward);
+        cameraRotation = math.mul(cameraRotation, pitchRotation);
+        return cameraRotation;
+    }
+}

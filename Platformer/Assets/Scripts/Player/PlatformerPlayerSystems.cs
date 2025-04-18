@@ -91,7 +91,7 @@ public partial struct PlatformerPlayerVariableStepControlSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        state.RequireForUpdate(SystemAPI.QueryBuilder().WithAll<PlatformerPlayer, PlatformerPlayerInputs>().Build());
+        state.RequireForUpdate(SystemAPI.QueryBuilder().WithAll<PlatformerPlayer, PlatformerPlayerNetworkInput, PlatformerPlayerInputs>().Build());
     }
 
     [BurstCompile]
@@ -148,33 +148,38 @@ public partial struct PlatformerPlayerFixedStepControlSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        foreach (var (playerInputs, player) in SystemAPI.Query<RefRW<PlatformerPlayerInputs>, PlatformerPlayer>()
+        foreach (var (playerInputs, player) in SystemAPI.Query<PlatformerPlayerInputs, PlatformerPlayer>()
                      .WithAll<Simulate>())
         {
             if (SystemAPI.HasComponent<PlatformerCharacterControl>(player.ControlledCharacter) && SystemAPI.HasComponent<PlatformerCharacterStateMachine>(player.ControlledCharacter))
             {
-                PlatformerCharacterControl characterControl = SystemAPI.GetComponent<PlatformerCharacterControl>(player.ControlledCharacter);
-                PlatformerCharacterStateMachine stateMachine = SystemAPI.GetComponent<PlatformerCharacterStateMachine>(player.ControlledCharacter);
+                var characterControl = SystemAPI.GetComponent<PlatformerCharacterControl>(player.ControlledCharacter);
+                var stateMachine = SystemAPI.GetComponent<PlatformerCharacterStateMachine>(player.ControlledCharacter);
+                float3 characterUp = MathUtilities.GetUpFromRotation(SystemAPI.GetComponent<LocalTransform>(player.ControlledCharacter).Rotation);
 
                 // Get camera rotation data, since our movement is relative to it
                 quaternion cameraRotation = quaternion.identity;
-                if (SystemAPI.HasComponent<LocalTransform>(player.ControlledCamera))
+                if (SystemAPI.HasComponent<OrbitCamera>(player.ControlledCamera))
                 {
-                    cameraRotation = SystemAPI.GetComponent<LocalTransform>(player.ControlledCamera).Rotation;
+                    // Camera rotation is calculated rather than gotten from transform, because this allows us to 
+                    // reduce the size of the camera ghost state in a netcode prediction context.
+                    // If not using netcode prediction, we could simply get rotation from transform here instead.
+                    OrbitCamera orbitCamera = SystemAPI.GetComponent<OrbitCamera>(player.ControlledCamera);
+                    cameraRotation = OrbitCameraUtilities.CalculateCameraRotation(characterUp, orbitCamera.PlanarForward, orbitCamera.PitchAngle);
                 }
+                
+                stateMachine.GetMoveVectorFromPlayerInput(stateMachine.CurrentState, in playerInputs, cameraRotation, out characterControl.MoveVector);
 
-                stateMachine.GetMoveVectorFromPlayerInput(stateMachine.CurrentState, in playerInputs.ValueRO, cameraRotation, out characterControl.MoveVector);
+                characterControl.JumpHeld = playerInputs.JumpHeld;
+                characterControl.RollHeld = playerInputs.RollHeld;
+                characterControl.SprintHeld = playerInputs.SprintHeld;
 
-                characterControl.JumpHeld = playerInputs.ValueRW.JumpHeld;
-                characterControl.RollHeld = playerInputs.ValueRW.RollHeld;
-                characterControl.SprintHeld = playerInputs.ValueRW.SprintHeld;
-
-                characterControl.JumpPressed = playerInputs.ValueRW.JumpPressed.IsSet;
-                characterControl.DashPressed = playerInputs.ValueRW.DashPressed.IsSet;
-                characterControl.CrouchPressed = playerInputs.ValueRW.CrouchPressed.IsSet;
-                characterControl.RopePressed = playerInputs.ValueRW.RopePressed.IsSet;
-                characterControl.ClimbPressed = playerInputs.ValueRW.ClimbPressed.IsSet;
-                characterControl.FlyNoCollisionsPressed = playerInputs.ValueRW.FlyNoCollisionsPressed.IsSet;
+                characterControl.JumpPressed = playerInputs.JumpPressed.IsSet;
+                characterControl.DashPressed = playerInputs.DashPressed.IsSet;
+                characterControl.CrouchPressed = playerInputs.CrouchPressed.IsSet;
+                characterControl.RopePressed = playerInputs.RopePressed.IsSet;
+                characterControl.ClimbPressed = playerInputs.ClimbPressed.IsSet;
+                characterControl.FlyNoCollisionsPressed = playerInputs.FlyNoCollisionsPressed.IsSet;
 
                 SystemAPI.SetComponent(player.ControlledCharacter, characterControl);
             }

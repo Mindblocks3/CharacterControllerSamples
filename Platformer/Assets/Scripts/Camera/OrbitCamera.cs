@@ -7,6 +7,7 @@ using Unity.Transforms;
 using UnityEngine;
 
 [GhostComponent]
+[Serializable]
 public struct OrbitCamera : IComponentData
 {
     public float RotationSpeed;

@@ -9,8 +9,12 @@ public struct CustomGravity : IComponentData
 {
     public float GravityMultiplier;
 
-    [HideInInspector] public float3 Gravity;
-    [HideInInspector] public bool TouchedByNonGlobalGravity;
-    [HideInInspector] public Entity CurrentZoneEntity;
-    [HideInInspector] public Entity LastZoneEntity;
+    // [HideInInspector] 
+    public float3 Gravity;
+    // [HideInInspector] 
+    public bool TouchedByNonGlobalGravity;
+    // [HideInInspector] 
+    public Entity CurrentZoneEntity;
+    // [HideInInspector] 
+    public Entity LastZoneEntity;
 }

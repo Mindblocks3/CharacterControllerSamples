@@ -44,7 +44,7 @@ public struct CharacterInterpolation_GhostVariant
 }
 
 [GhostComponentVariation(typeof(TrackedTransform))]
-[GhostComponent()]
+[GhostComponent(PrefabType = GhostPrefabType.PredictedClient)]
 public struct TrackedTransform_DefaultVariant
 {
     [GhostField()]

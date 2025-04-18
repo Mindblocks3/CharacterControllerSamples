@@ -45,9 +45,8 @@ public partial struct TeleporterSystem : ISystem
             // Only teleport if there is a destination
             if (teleporter.DestinationEntity != Entity.Null)
             {
-                for (int i = 0; i < triggerEventsBuffer.Length; i++)
+                foreach (var triggerEvent in triggerEventsBuffer)
                 {
-                    StatefulTriggerEvent triggerEvent = triggerEventsBuffer[i];
                     Entity otherEntity = triggerEvent.GetOtherEntity(entity);
 
                     // If a character has entered the trigger, move its translation to the destination

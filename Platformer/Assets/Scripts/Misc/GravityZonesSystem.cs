@@ -19,10 +19,10 @@ public partial class GravityZonesSystem : SystemBase
         // (without this, we'd see jitter on the planet)
         World.GetOrCreateSystem<TransformSystemGroup>().Update(World.Unmanaged);
         
-        ResetGravitiesJob resetGravitiesJob = new ResetGravitiesJob();
+        var resetGravitiesJob = new ResetGravitiesJob();
         resetGravitiesJob.Schedule();
 
-        SphericalGravityJob sphericalGravityJob = new SphericalGravityJob
+        var sphericalGravityJob = new SphericalGravityJob
         {
             CustomGravityFromEntity = SystemAPI.GetComponentLookup<CustomGravity>(false),
             LocalToWorldFromEntity = SystemAPI.GetComponentLookup<LocalToWorld>(true),
@@ -31,14 +31,14 @@ public partial class GravityZonesSystem : SystemBase
 
         if (SystemAPI.TryGetSingleton(out GlobalGravityZone globalGravityZone))
         {
-            GlobalGravityJob globalGravityJob = new GlobalGravityJob
+            var globalGravityJob = new GlobalGravityJob
             {
                 GlobalGravityZone = globalGravityZone,
             };
             globalGravityJob.Schedule();
         }
 
-        ApplyGravityJob applyGravityJob = new ApplyGravityJob
+        var applyGravityJob = new ApplyGravityJob
         {
             DeltaTime = SystemAPI.Time.DeltaTime,
         };
@@ -69,9 +69,8 @@ public partial class GravityZonesSystem : SystemBase
                 SphereCollider* sphereCollider = ((SphereCollider*)physicsCollider.ColliderPtr);
                 SphereGeometry sphereGeometry = sphereCollider->Geometry;
 
-                for (int i = 0; i < triggerEventsBuffer.Length; i++)
+                foreach (var triggerEvent in triggerEventsBuffer)
                 {
-                    StatefulTriggerEvent triggerEvent = triggerEventsBuffer[i];
                     if (triggerEvent.State == StatefulEventState.Stay)
                     {
                         Entity otherEntity = triggerEvent.GetOtherEntity(entity);

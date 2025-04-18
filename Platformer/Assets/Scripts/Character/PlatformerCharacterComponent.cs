@@ -5,8 +5,10 @@ using Unity.Mathematics;
 using UnityEngine;
 using Unity.Physics.Authoring;
 using Unity.CharacterController;
+using Unity.NetCode;
 using Unity.Physics;
 
+[GhostComponent]
 [Serializable]
 public struct PlatformerCharacterComponent : IComponentData
 {
@@ -111,36 +113,52 @@ public struct PlatformerCharacterComponent : IComponentData
     public CapsuleGeometryDefinition SwimmingGeometry;
     
     [HideInInspector]
+    [GhostField]
     public float3 LocalLedgeDetectionPoint;
     [HideInInspector]
+    [GhostField]
     public float3 LocalSwimmingDetectionPoint;
     [HideInInspector]
+    [GhostField]
     public byte CurrentUngroundedJumps;
     [HideInInspector]
+    [GhostField]
     public float HeldJumpTimeCounter;
     [HideInInspector]
+    [GhostField]
     public bool JumpPressedBeforeBecameGrounded;
     [HideInInspector]
+    [GhostField]
     public bool AllowJumpAfterBecameUngrounded;
     [HideInInspector]
+    [GhostField]
     public bool AllowHeldJumpInAir;
     [HideInInspector]
+    [GhostField]
     public float LastTimeJumpPressed;
     [HideInInspector]
+    [GhostField]
     public float LastTimeWasGrounded;
     [HideInInspector]
+    [GhostField]
     public bool HasDetectedMoveAgainstWall;
     [HideInInspector]
+    [GhostField]
     public float3 LastKnownWallNormal;
     [HideInInspector]
+    [GhostField]
     public float LedgeGrabBlockCounter;
     [HideInInspector]
+    [GhostField]
     public float DistanceFromWaterSurface;
     [HideInInspector]
+    [GhostField]
     public float3 DirectionToWaterSurface;
     [HideInInspector]
+    [GhostField]
     public bool IsSprinting;
     [HideInInspector]
+    [GhostField]
     public bool IsOnStickySurface;
 }
 

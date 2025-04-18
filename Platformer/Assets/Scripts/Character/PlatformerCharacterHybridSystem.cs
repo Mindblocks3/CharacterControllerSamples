@@ -6,7 +6,7 @@ using Unity.Transforms;
 using UnityEngine;
 
 [AlwaysSynchronizeSystem]
-[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+//[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
 [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
 [UpdateAfter(typeof(EndSimulationEntityCommandBufferSystem))]
 public partial class PlatformerCharacterHybridSystem : SystemBase
@@ -30,11 +30,11 @@ public partial class PlatformerCharacterHybridSystem : SystemBase
             });
 
             // Find the clipIndex param
-            for (int i = 0; i < animator.parameters.Length; i++)
+            foreach (var animatorControllerParameter in animator.parameters)
             {
-                if (animator.parameters[i].name == "ClipIndex")
+                if (animatorControllerParameter.name == "ClipIndex")
                 {
-                    characterAnimation.ValueRW.ClipIndexParameterHash = animator.parameters[i].nameHash;
+                    characterAnimation.ValueRW.ClipIndexParameterHash = animatorControllerParameter.nameHash;
                     break;
                 }
             }

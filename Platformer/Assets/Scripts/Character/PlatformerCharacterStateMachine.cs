@@ -3,12 +3,16 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.CharacterController;
 using Unity.Mathematics;
+using Unity.NetCode;
 using UnityEngine;
 
+[GhostComponent]
 [Serializable]
 public struct PlatformerCharacterStateMachine : IComponentData
 {
+    [GhostField]
     public CharacterState CurrentState;
+    [GhostField]
     public CharacterState PreviousState;
     
     public GroundMoveState GroundMoveState;

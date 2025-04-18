@@ -585,7 +585,7 @@ MonoBehaviour:
   Importance: 1
   prefabId: 5fbcc801dea8fd640a004697d22ed448
   HasOwner: 1
-  SupportAutoCommandTarget: 1
+  SupportAutoCommandTarget: 0
   TrackInterpolationDelay: 0
   GhostGroup: 0
   UsePreSerialization: 0
