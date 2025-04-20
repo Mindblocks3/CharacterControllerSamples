@@ -9,7 +9,7 @@ using Unity.Physics.Systems;
 using Unity.CharacterController;
 using Unity.NetCode;
 
-[UpdateInGroup(typeof(GhostInputSystemGroup), OrderFirst = true)]
+[UpdateInGroup(typeof(GhostInputSystemGroup))]
 [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
 public partial class PlatformerPlayerInputsSystem : SystemBase
 {
@@ -17,7 +17,7 @@ public partial class PlatformerPlayerInputsSystem : SystemBase
 
     protected override void OnCreate()
     {
-        PlatformerInputActions inputActions = new PlatformerInputActions();
+        var inputActions = new PlatformerInputActions();
         inputActions.Enable();
         inputActions.GameplayMap.Enable();
         _defaultActionsMap = inputActions.GameplayMap;
@@ -148,6 +148,7 @@ public partial struct PlatformerPlayerFixedStepControlSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+
         foreach (var (playerInputs, player) in SystemAPI.Query<PlatformerPlayerInputs, PlatformerPlayer>()
                      .WithAll<Simulate>())
         {
@@ -173,6 +174,7 @@ public partial struct PlatformerPlayerFixedStepControlSystem : ISystem
                 characterControl.JumpHeld = playerInputs.JumpHeld;
                 characterControl.RollHeld = playerInputs.RollHeld;
                 characterControl.SprintHeld = playerInputs.SprintHeld;
+                
 
                 characterControl.JumpPressed = playerInputs.JumpPressed.IsSet;
                 characterControl.DashPressed = playerInputs.DashPressed.IsSet;
@@ -180,7 +182,7 @@ public partial struct PlatformerPlayerFixedStepControlSystem : ISystem
                 characterControl.RopePressed = playerInputs.RopePressed.IsSet;
                 characterControl.ClimbPressed = playerInputs.ClimbPressed.IsSet;
                 characterControl.FlyNoCollisionsPressed = playerInputs.FlyNoCollisionsPressed.IsSet;
-
+                
                 SystemAPI.SetComponent(player.ControlledCharacter, characterControl);
             }
         }

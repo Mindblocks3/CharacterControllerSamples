@@ -12,6 +12,7 @@ using Unity.Physics.Extensions;
 using Unity.Physics.Systems;
 using Unity.Transforms;
 using Unity.CharacterController;
+using Unity.NetCode;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 using CapsuleCollider = Unity.Physics.CapsuleCollider;
@@ -53,12 +54,16 @@ public readonly partial struct PlatformerCharacterAspect : IAspect, IKinematicCh
     public readonly RefRW<PlatformerCharacterStateMachine> StateMachine;
     public readonly RefRW<CustomGravity> CustomGravity;
 
-    public void PhysicsUpdate(ref PlatformerCharacterUpdateContext context, ref KinematicCharacterUpdateContext baseContext)
+    public void PhysicsUpdate(ref PlatformerCharacterUpdateContext context,
+        ref KinematicCharacterUpdateContext baseContext)
     {
         ref KinematicCharacterBody characterBody = ref CharacterAspect.CharacterBody.ValueRW;
         ref PlatformerCharacterComponent character = ref Character.ValueRW;
         ref PlatformerCharacterControl characterControl = ref CharacterControl.ValueRW;
         ref PlatformerCharacterStateMachine stateMachine = ref StateMachine.ValueRW;
+
+        float3 beforeCharacterPosition = CharacterAspect.LocalTransform.ValueRO.Position;
+        float3 beforeCharacterVelocity = characterBody.RelativeVelocity;
 
         // Common pre-update logic across states
         {
@@ -77,32 +82,41 @@ public readonly partial struct PlatformerCharacterAspect : IAspect, IKinematicCh
                 character.HeldJumpTimeCounter = 0f;
                 character.AllowHeldJumpInAir = false;
             }
+
             if (characterControl.JumpPressed)
             {
                 character.LastTimeJumpPressed = (float)baseContext.Time.ElapsedTime;
             }
-            
+
             character.HasDetectedMoveAgainstWall = false;
             if (characterBody.IsGrounded)
             {
                 character.LastTimeWasGrounded = (float)baseContext.Time.ElapsedTime;
-                
+
                 character.CurrentUngroundedJumps = 0;
                 character.AllowJumpAfterBecameUngrounded = true;
                 character.AllowHeldJumpInAir = true;
             }
+
             if (character.LedgeGrabBlockCounter > 0f)
             {
                 character.LedgeGrabBlockCounter -= baseContext.Time.DeltaTime;
             }
         }
-        
+
+
         stateMachine.OnStatePhysicsUpdate(stateMachine.CurrentState, ref context, ref baseContext, in this);
-        
+
         // Common post-update logic across states
         {
             character.JumpPressedBeforeBecameGrounded = false;
         }
+
+        // var networkTime = context.NetworkTime;
+        // float3 characterPosition = CharacterAspect.LocalTransform.ValueRO.Position;
+        // float3 characterVelocity = characterBody.RelativeVelocity;
+        // var state = stateMachine.CurrentState;
+        // Debug.Log($"server tick: {networkTime.ServerTick.TickValue}, isClient: {context.isClient}, state {state}, prediction tick {networkTime.InterpolationTick.TickValue}, position, before: {beforeCharacterPosition} after: {characterPosition}, velocity before: {beforeCharacterVelocity} after:{characterVelocity}");
     }
 
     public void VariableUpdate(ref PlatformerCharacterUpdateContext context, ref KinematicCharacterUpdateContext baseContext)

@@ -6,7 +6,7 @@ using Unity.Transforms;
 using UnityEngine;
 
 [AlwaysSynchronizeSystem]
-//[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
 [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
 [UpdateAfter(typeof(EndSimulationEntityCommandBufferSystem))]
 public partial class PlatformerCharacterHybridSystem : SystemBase

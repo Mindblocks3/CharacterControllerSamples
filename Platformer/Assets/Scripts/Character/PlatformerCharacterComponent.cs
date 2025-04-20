@@ -140,7 +140,6 @@ public struct PlatformerCharacterComponent : IComponentData
     [GhostField]
     public float LastTimeWasGrounded;
     [HideInInspector]
-    [GhostField]
     public bool HasDetectedMoveAgainstWall;
     [HideInInspector]
     [GhostField]
@@ -155,7 +154,6 @@ public struct PlatformerCharacterComponent : IComponentData
     [GhostField]
     public float3 DirectionToWaterSurface;
     [HideInInspector]
-    [GhostField]
     public bool IsSprinting;
     [HideInInspector]
     [GhostField]

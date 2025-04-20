@@ -52,6 +52,7 @@ public partial struct PlatformerCharacterPhysicsUpdateSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
+        state.RequireForUpdate<NetworkTime>();
         _characterQuery = KinematicCharacterUtilities.GetBaseCharacterQueryBuilder()
             .WithAll<
                 PlatformerCharacterComponent,
@@ -75,10 +76,11 @@ public partial struct PlatformerCharacterPhysicsUpdateSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        var networkTime = SystemAPI.GetSingleton<NetworkTime>();
         _context.OnSystemUpdate(ref state, SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged));
         _baseContext.OnSystemUpdate(ref state, SystemAPI.Time, SystemAPI.GetSingleton<PhysicsWorldSingleton>());
 
-        PlatformerCharacterPhysicsUpdateJob job = new PlatformerCharacterPhysicsUpdateJob
+        var job = new PlatformerCharacterPhysicsUpdateJob
         {
             Context = _context,
             BaseContext = _baseContext,
@@ -144,10 +146,11 @@ public partial struct PlatformerCharacterVariableUpdateSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        var networkTime = SystemAPI.GetSingleton<NetworkTime>();
         _context.OnSystemUpdate(ref state, SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged));
         _baseContext.OnSystemUpdate(ref state, SystemAPI.Time, SystemAPI.GetSingleton<PhysicsWorldSingleton>());
 
-        PlatformerCharacterVariableUpdateJob job = new PlatformerCharacterVariableUpdateJob
+        var job = new PlatformerCharacterVariableUpdateJob
         {
             Context = _context,
             BaseContext = _baseContext,
