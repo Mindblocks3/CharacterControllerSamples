@@ -27,6 +27,9 @@ public struct PlatformerCharacterUpdateContext
     [ReadOnly]
     public BufferLookup<LinkedEntityGroup> LinkedEntityGroupLookup;
 
+    public NetworkTime NetworkTime;
+    public bool IsClient;
+
     public void SetChunkIndex(int chunkIndex)
     {
         ChunkIndex = chunkIndex;
@@ -64,8 +67,8 @@ public readonly partial struct PlatformerCharacterAspect : IAspect, IKinematicCh
 
         float3 beforeCharacterPosition = CharacterAspect.LocalTransform.ValueRO.Position;
         float3 beforeCharacterVelocity = characterBody.RelativeVelocity;
-
-        // Common pre-update logic across states
+        
+    // Common pre-update logic across states
         {
             // Handle initial state transition
             if (stateMachine.CurrentState == CharacterState.Uninitialized)
@@ -116,7 +119,7 @@ public readonly partial struct PlatformerCharacterAspect : IAspect, IKinematicCh
         // float3 characterPosition = CharacterAspect.LocalTransform.ValueRO.Position;
         // float3 characterVelocity = characterBody.RelativeVelocity;
         // var state = stateMachine.CurrentState;
-        // Debug.Log($"server tick: {networkTime.ServerTick.TickValue}, isClient: {context.isClient}, state {state}, prediction tick {networkTime.InterpolationTick.TickValue}, position, before: {beforeCharacterPosition} after: {characterPosition}, velocity before: {beforeCharacterVelocity} after:{characterVelocity}");
+        // Debug.Log($"server tick: {networkTime.ServerTick.TickValue}, isClient: {context.IsClient}, state {state}, prediction tick {networkTime.InterpolationTick.TickValue}, position, before: {beforeCharacterPosition} after: {characterPosition}, velocity before: {beforeCharacterVelocity} after:{characterVelocity}");
     }
 
     public void VariableUpdate(ref PlatformerCharacterUpdateContext context, ref KinematicCharacterUpdateContext baseContext)

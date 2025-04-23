@@ -76,7 +76,9 @@ public partial struct PlatformerCharacterPhysicsUpdateSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+        _context.NetworkTime = SystemAPI.GetSingleton<NetworkTime>();
+        _context.IsClient = state.WorldUnmanaged.IsClient();
+        
         _context.OnSystemUpdate(ref state, SystemAPI.GetSingletonRW<EndSimulationEntityCommandBufferSystem.Singleton>().ValueRW.CreateCommandBuffer(state.WorldUnmanaged));
         _baseContext.OnSystemUpdate(ref state, SystemAPI.Time, SystemAPI.GetSingleton<PhysicsWorldSingleton>());
 

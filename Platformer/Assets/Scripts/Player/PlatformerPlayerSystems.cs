@@ -156,17 +156,18 @@ public partial struct PlatformerPlayerFixedStepControlSystem : ISystem
             {
                 var characterControl = SystemAPI.GetComponent<PlatformerCharacterControl>(player.ControlledCharacter);
                 var stateMachine = SystemAPI.GetComponent<PlatformerCharacterStateMachine>(player.ControlledCharacter);
-                float3 characterUp = MathUtilities.GetUpFromRotation(SystemAPI.GetComponent<LocalTransform>(player.ControlledCharacter).Rotation);
+                //float3 characterUp = MathUtilities.GetUpFromRotation(SystemAPI.GetComponent<LocalTransform>(player.ControlledCharacter).Rotation);
 
                 // Get camera rotation data, since our movement is relative to it
                 quaternion cameraRotation = quaternion.identity;
                 if (SystemAPI.HasComponent<OrbitCamera>(player.ControlledCamera))
                 {
+                    //cameraRotation = SystemAPI.GetComponent<LocalTransform>(player.ControlledCamera).Rotation;
                     // Camera rotation is calculated rather than gotten from transform, because this allows us to 
                     // reduce the size of the camera ghost state in a netcode prediction context.
                     // If not using netcode prediction, we could simply get rotation from transform here instead.
                     OrbitCamera orbitCamera = SystemAPI.GetComponent<OrbitCamera>(player.ControlledCamera);
-                    cameraRotation = OrbitCameraUtilities.CalculateCameraRotation(characterUp, orbitCamera.PlanarForward, orbitCamera.PitchAngle);
+                    cameraRotation = OrbitCameraUtilities.CalculateCameraRotation(math.up(), orbitCamera.PlanarForward, orbitCamera.PitchAngle);
                 }
                 
                 stateMachine.GetMoveVectorFromPlayerInput(stateMachine.CurrentState, in playerInputs, cameraRotation, out characterControl.MoveVector);
