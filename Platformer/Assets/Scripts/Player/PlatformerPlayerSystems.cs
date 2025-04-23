@@ -167,7 +167,8 @@ public partial struct PlatformerPlayerFixedStepControlSystem : ISystem
                     // reduce the size of the camera ghost state in a netcode prediction context.
                     // If not using netcode prediction, we could simply get rotation from transform here instead.
                     OrbitCamera orbitCamera = SystemAPI.GetComponent<OrbitCamera>(player.ControlledCamera);
-                    cameraRotation = OrbitCameraUtilities.CalculateCameraRotation(math.up(), orbitCamera.PlanarForward, orbitCamera.PitchAngle);
+                    float3 cameraTargetUp = math.mul(orbitCamera.CameraTargetTransform.rot, math.up());
+                    cameraRotation = OrbitCameraUtilities.CalculateCameraRotation(cameraTargetUp, orbitCamera.PlanarForward, orbitCamera.PitchAngle);
                 }
                 
                 stateMachine.GetMoveVectorFromPlayerInput(stateMachine.CurrentState, in playerInputs, cameraRotation, out characterControl.MoveVector);
