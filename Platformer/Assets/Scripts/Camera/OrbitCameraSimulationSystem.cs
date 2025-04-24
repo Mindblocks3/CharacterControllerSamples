@@ -16,64 +16,8 @@ using UnityEngine;
 [UpdateAfter(typeof(PlatformerPlayerVariableStepControlSystem))]
 [UpdateAfter(typeof(PlatformerCharacterVariableUpdateSystem))]
 [BurstCompile]
-public partial struct OrbitCameraSystem : ISystem
+public partial struct OrbitCameraSimulationSystem : ISystem
 {
-    public struct CameraObstructionHitsCollector : ICollector<ColliderCastHit>
-    {
-        public bool EarlyOutOnFirstHit => false;
-        public float MaxFraction => 1f;
-        public int NumHits { get; private set; }
-
-        public ColliderCastHit ClosestHit;
-
-        private float _closestHitFraction;
-        private float3 _cameraDirection; 
-        private Entity _followedCharacter;
-        private DynamicBuffer<OrbitCameraIgnoredEntityBufferElement> _ignoredEntitiesBuffer;
-
-        public CameraObstructionHitsCollector(Entity followedCharacter, DynamicBuffer<OrbitCameraIgnoredEntityBufferElement> ignoredEntitiesBuffer, float3 cameraDirection)
-        {
-            NumHits = 0;
-            ClosestHit = default;
-
-            _closestHitFraction = float.MaxValue;
-            _cameraDirection = cameraDirection;
-            _followedCharacter = followedCharacter;
-            _ignoredEntitiesBuffer = ignoredEntitiesBuffer;
-        }
-
-        public bool AddHit(ColliderCastHit hit)
-        {
-            if (_followedCharacter == hit.Entity)
-            {
-                return false;
-            }
-        
-            if (math.dot(hit.SurfaceNormal, _cameraDirection) < 0f || !PhysicsUtilities.IsCollidable(hit.Material))
-            {
-                return false;
-            }
-
-            for (int i = 0; i < _ignoredEntitiesBuffer.Length; i++)
-            {
-                if (_ignoredEntitiesBuffer[i].Entity == hit.Entity)
-                {
-                    return false;
-                }
-            }
-
-            // Process valid hit
-            if (hit.Fraction < _closestHitFraction)
-            {
-                _closestHitFraction = hit.Fraction;
-                ClosestHit = hit;
-            }
-            NumHits++;
-
-            return true;
-        }
-    }
-    
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<PhysicsWorldSingleton>();
@@ -86,7 +30,7 @@ public partial struct OrbitCameraSystem : ISystem
 
     public void OnUpdate(ref SystemState state)
     {
-        OrbitCameraJob job = new OrbitCameraJob
+        var job = new OrbitCameraSimulationJob
         {
             TimeData = SystemAPI.Time,
             PhysicsWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().PhysicsWorld,
@@ -101,7 +45,7 @@ public partial struct OrbitCameraSystem : ISystem
 
     [BurstCompile]
     [WithAll(typeof(Simulate))]
-    public partial struct OrbitCameraJob : IJobEntity
+    public partial struct OrbitCameraSimulationJob : IJobEntity
     {
         public TimeData TimeData;
         public PhysicsWorld PhysicsWorld;
@@ -211,6 +155,201 @@ public partial struct OrbitCameraSystem : ISystem
                 // Distance input
                 float desiredDistanceMovementFromInput = cameraControl.ZoomDelta * orbitCamera.DistanceMovementSpeed;
                 orbitCamera.TargetDistance = math.clamp(orbitCamera.TargetDistance + desiredDistanceMovementFromInput, orbitCamera.MinDistance, orbitCamera.MaxDistance);
+                
+                // Calculate final camera position from targetposition + rotation + distance
+                localTransform.Position = orbitCamera.CameraTargetTransform.pos + (-cameraForward * orbitCamera.TargetDistance);
+            }
+        }
+    }
+}
+
+public static class OrbitCameraUtilities
+{
+    public static quaternion CalculateCameraRotation(float3 targetUp, float3 planarForward, float pitchAngle)
+    {
+        quaternion pitchRotation = quaternion.Euler(math.right() * math.radians(pitchAngle));
+
+        // Final rotation
+        quaternion cameraRotation = quaternion.LookRotationSafe(planarForward, targetUp);
+        return math.mul(cameraRotation, pitchRotation);
+    }
+}
+
+
+[UpdateInGroup(typeof(SimulationSystemGroup))]
+[UpdateAfter(typeof(TransformSystemGroup))]
+[BurstCompile]
+public partial struct OrbitCameraLateUpdateSystem : ISystem
+{
+    public struct CameraObstructionHitsCollector : ICollector<ColliderCastHit>
+    {
+        public bool EarlyOutOnFirstHit => false;
+        public float MaxFraction => 1f;
+        public int NumHits { get; private set; }
+
+        public ColliderCastHit ClosestHit;
+
+        private float _closestHitFraction;
+        private float3 _cameraDirection; 
+        private Entity _followedCharacter;
+        private DynamicBuffer<OrbitCameraIgnoredEntityBufferElement> _ignoredEntitiesBuffer;
+
+        public CameraObstructionHitsCollector(Entity followedCharacter, DynamicBuffer<OrbitCameraIgnoredEntityBufferElement> ignoredEntitiesBuffer, float3 cameraDirection)
+        {
+            NumHits = 0;
+            ClosestHit = default;
+
+            _closestHitFraction = float.MaxValue;
+            _cameraDirection = cameraDirection;
+            _followedCharacter = followedCharacter;
+            _ignoredEntitiesBuffer = ignoredEntitiesBuffer;
+        }
+
+        public bool AddHit(ColliderCastHit hit)
+        {
+            if (_followedCharacter == hit.Entity)
+            {
+                return false;
+            }
+        
+            if (math.dot(hit.SurfaceNormal, _cameraDirection) < 0f || !PhysicsUtilities.IsCollidable(hit.Material))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < _ignoredEntitiesBuffer.Length; i++)
+            {
+                if (_ignoredEntitiesBuffer[i].Entity == hit.Entity)
+                {
+                    return false;
+                }
+            }
+
+            // Process valid hit
+            if (hit.Fraction < _closestHitFraction)
+            {
+                _closestHitFraction = hit.Fraction;
+                ClosestHit = hit;
+            }
+            NumHits++;
+
+            return true;
+        }
+    }
+    
+    public void OnCreate(ref SystemState state)
+    {
+        state.RequireForUpdate<PhysicsWorldSingleton>();
+        state.RequireForUpdate(SystemAPI.QueryBuilder().WithAll<OrbitCamera, OrbitCameraControl>().Build());
+    }
+
+    public void OnDestroy(ref SystemState state)
+    {
+    }
+
+    public void OnUpdate(ref SystemState state)
+    {
+        OrbitCameraLateUpdateJob lateUpdateJob = new OrbitCameraLateUpdateJob
+        {
+            TimeData = SystemAPI.Time,
+            PhysicsWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().PhysicsWorld,
+            LocalToWorldLookup = SystemAPI.GetComponentLookup<LocalToWorld>(false),
+            KinematicCharacterBodyLookup = SystemAPI.GetComponentLookup<KinematicCharacterBody>(true),
+            PlatformerCharacterComponentLookup = SystemAPI.GetComponentLookup<PlatformerCharacterComponent>(true),
+            PlatformerCharacterStateMachineLookup = SystemAPI.GetComponentLookup<PlatformerCharacterStateMachine>(true),
+            CustomGravityLookup = SystemAPI.GetComponentLookup<CustomGravity>(true),
+        };
+        lateUpdateJob.Schedule();
+    }
+
+    [BurstCompile]
+    [WithAll(typeof(Simulate))]
+    public partial struct OrbitCameraLateUpdateJob : IJobEntity
+    {
+        public TimeData TimeData;
+        public PhysicsWorld PhysicsWorld;
+
+        public ComponentLookup<LocalToWorld> LocalToWorldLookup;
+        [ReadOnly] public ComponentLookup<KinematicCharacterBody> KinematicCharacterBodyLookup;
+        [ReadOnly] public ComponentLookup<PlatformerCharacterComponent> PlatformerCharacterComponentLookup;
+        [ReadOnly] public ComponentLookup<PlatformerCharacterStateMachine> PlatformerCharacterStateMachineLookup;
+        [ReadOnly] public ComponentLookup<CustomGravity> CustomGravityLookup;
+
+        void Execute(
+            Entity entity,
+            ref LocalTransform localTransform,
+            ref OrbitCamera orbitCamera,
+            in OrbitCameraControl cameraControl,
+            in DynamicBuffer<OrbitCameraIgnoredEntityBufferElement> ignoredEntitiesBuffer)
+        {
+            float elapsedTime = (float)TimeData.ElapsedTime;
+            
+            if (LocalToWorldLookup.TryGetComponent(cameraControl.FollowedCharacterEntity, out LocalToWorld characterLTW) &&
+                CustomGravityLookup.TryGetComponent(cameraControl.FollowedCharacterEntity, out CustomGravity characterCustomGravity) &&
+                PlatformerCharacterComponentLookup.TryGetComponent(cameraControl.FollowedCharacterEntity, out PlatformerCharacterComponent characterComponent) &&
+                PlatformerCharacterStateMachineLookup.TryGetComponent(cameraControl.FollowedCharacterEntity, out PlatformerCharacterStateMachine characterStateMachine))
+            {
+                // Camera target handling
+                {
+                    characterStateMachine.GetCameraParameters(characterStateMachine.CurrentState, in characterComponent, out Entity selectedCameraTarget, out bool calculateUpFromGravity);
+
+                    RigidTransform selectedCameraTargetTransform = default;
+                    if (LocalToWorldLookup.TryGetComponent(selectedCameraTarget, out LocalToWorld camTargetLTW))
+                    {
+                        selectedCameraTargetTransform = new RigidTransform(camTargetLTW.Rotation, camTargetLTW.Position);
+                    }
+                    else
+                    {
+                        selectedCameraTargetTransform = new RigidTransform(characterLTW.Rotation, characterLTW.Position);
+                    }
+                    if (calculateUpFromGravity)
+                    {
+                        selectedCameraTargetTransform.rot = MathUtilities.CreateRotationWithUpPriority(math.normalizesafe(-characterCustomGravity.Gravity), math.mul(selectedCameraTargetTransform.rot, math.forward()));
+                    }
+
+                    // Detect transition
+                    if (orbitCamera.ActiveCameraTarget != selectedCameraTarget ||
+                        orbitCamera.PreviousCalculateUpFromGravity != calculateUpFromGravity)
+                    {
+                        orbitCamera.CameraTargetTransitionStartTime = elapsedTime;
+                        orbitCamera.CameraTargetTransitionFromTransform = orbitCamera.CameraTargetTransform;
+                        orbitCamera.ActiveCameraTarget = selectedCameraTarget;
+                        orbitCamera.PreviousCalculateUpFromGravity = calculateUpFromGravity;
+                    }
+
+                    // Update transitions
+                    if (elapsedTime < orbitCamera.CameraTargetTransitionStartTime + orbitCamera.CameraTargetTransitionTime)
+                    {
+                        float3 previousCameraTargetPosition = default;
+                        if (LocalToWorldLookup.TryGetComponent(orbitCamera.PreviousCameraTarget, out LocalToWorld previousCamTargetLTW))
+                        {
+                            previousCameraTargetPosition = previousCamTargetLTW.Position;
+                        }
+                        else
+                        {
+                            previousCameraTargetPosition = characterLTW.Position;
+                        }
+                        
+                        float transitionRatio = math.saturate((elapsedTime - orbitCamera.CameraTargetTransitionStartTime) / orbitCamera.CameraTargetTransitionTime);
+                        orbitCamera.CameraTargetTransform.pos = math.lerp(previousCameraTargetPosition, selectedCameraTargetTransform.pos, transitionRatio);
+                        orbitCamera.CameraTargetTransform.rot = math.slerp(orbitCamera.CameraTargetTransitionFromTransform.rot, selectedCameraTargetTransform.rot, transitionRatio);
+                    }
+                    else
+                    {
+                        orbitCamera.CameraTargetTransform = selectedCameraTargetTransform;
+                        orbitCamera.PreviousCameraTarget = orbitCamera.ActiveCameraTarget;
+                    }
+                }
+
+                float3 cameraTargetUp = math.mul(orbitCamera.CameraTargetTransform.rot, math.up());
+                
+                quaternion cameraRotation = OrbitCameraUtilities.CalculateCameraRotation(cameraTargetUp, orbitCamera.PlanarForward, orbitCamera.PitchAngle);
+                
+                float3 cameraForward = MathUtilities.GetForwardFromRotation(cameraRotation);
+
+                // Distance input
+                float desiredDistanceMovementFromInput = cameraControl.ZoomDelta * orbitCamera.DistanceMovementSpeed;
+                orbitCamera.TargetDistance = math.clamp(orbitCamera.TargetDistance + desiredDistanceMovementFromInput, orbitCamera.MinDistance, orbitCamera.MaxDistance);
                 orbitCamera.SmoothedTargetDistance = math.lerp(orbitCamera.SmoothedTargetDistance, orbitCamera.TargetDistance, MathUtilities.GetSharpnessInterpolant(orbitCamera.DistanceMovementSharpness, TimeData.DeltaTime));
 
                 // Obstructions
@@ -285,16 +424,5 @@ public partial struct OrbitCameraSystem : ISystem
                 LocalToWorldLookup[entity] = cameraLocalToWorld;
             }
         }
-    }
-}
-
-public static class OrbitCameraUtilities
-{
-    public static quaternion CalculateCameraRotation(float3 targetUp, float3 planarForward, float pitchAngle)
-    {
-        quaternion pitchRotation = quaternion.Euler(math.right() * math.radians(pitchAngle));
-        quaternion cameraRotation = MathUtilities.CreateRotationWithUpPriority(targetUp, planarForward);
-        cameraRotation = math.mul(cameraRotation, pitchRotation);
-        return cameraRotation;
     }
 }
