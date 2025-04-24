@@ -254,7 +254,6 @@ public partial struct OrbitCameraLateUpdateSystem : ISystem
             TimeData = SystemAPI.Time,
             PhysicsWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().PhysicsWorld,
             LocalToWorldLookup = SystemAPI.GetComponentLookup<LocalToWorld>(false),
-            KinematicCharacterBodyLookup = SystemAPI.GetComponentLookup<KinematicCharacterBody>(true),
             PlatformerCharacterComponentLookup = SystemAPI.GetComponentLookup<PlatformerCharacterComponent>(true),
             PlatformerCharacterStateMachineLookup = SystemAPI.GetComponentLookup<PlatformerCharacterStateMachine>(true),
             CustomGravityLookup = SystemAPI.GetComponentLookup<CustomGravity>(true),
@@ -270,14 +269,12 @@ public partial struct OrbitCameraLateUpdateSystem : ISystem
         public PhysicsWorld PhysicsWorld;
 
         public ComponentLookup<LocalToWorld> LocalToWorldLookup;
-        [ReadOnly] public ComponentLookup<KinematicCharacterBody> KinematicCharacterBodyLookup;
         [ReadOnly] public ComponentLookup<PlatformerCharacterComponent> PlatformerCharacterComponentLookup;
         [ReadOnly] public ComponentLookup<PlatformerCharacterStateMachine> PlatformerCharacterStateMachineLookup;
         [ReadOnly] public ComponentLookup<CustomGravity> CustomGravityLookup;
 
         void Execute(
             Entity entity,
-            ref LocalTransform localTransform,
             ref OrbitCamera orbitCamera,
             in OrbitCameraControl cameraControl,
             in DynamicBuffer<OrbitCameraIgnoredEntityBufferElement> ignoredEntitiesBuffer)
@@ -416,11 +413,11 @@ public partial struct OrbitCameraLateUpdateSystem : ISystem
                 }
 
                 // Calculate final camera position from targetposition + rotation + distance
-                localTransform.Position = orbitCamera.CameraTargetTransform.pos + (-cameraForward * orbitCamera.ObstructedDistance);
+                var position = orbitCamera.CameraTargetTransform.pos + (-cameraForward * orbitCamera.ObstructedDistance);
 
                 // Manually calculate the LocalToWorld since this is updating after the Transform systems, and the LtW is what rendering uses
                 LocalToWorld cameraLocalToWorld = new LocalToWorld();
-                cameraLocalToWorld.Value = new float4x4(localTransform.Rotation, localTransform.Position);
+                cameraLocalToWorld.Value = new float4x4(cameraRotation, position);
                 LocalToWorldLookup[entity] = cameraLocalToWorld;
             }
         }
