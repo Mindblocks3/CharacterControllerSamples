@@ -48,6 +48,7 @@ public struct DashingState : IPlatformerCharacterState
         ref PlatformerCharacterComponent character = ref aspect.Character.ValueRW;
         ref KinematicCharacterBody characterBody = ref aspect.CharacterAspect.CharacterBody.ValueRW;
         
+        aspect.SetCapsuleGeometry(character.StandingGeometry.ToCapsuleGeometry());
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, false);
 
         characterBody.RelativeVelocity = _dashDirection * character.DashSpeed;

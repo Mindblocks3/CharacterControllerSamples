@@ -22,6 +22,7 @@ public struct WallRunState : IPlatformerCharacterState
         ref PlatformerCharacterControl characterControl = ref aspect.CharacterControl.ValueRW;
         CustomGravity customGravity = aspect.CustomGravity.ValueRO;
         
+        aspect.SetCapsuleGeometry(character.StandingGeometry.ToCapsuleGeometry()); 
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, true);
 
         // Detect if still moving against ungrounded surface

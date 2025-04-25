@@ -57,7 +57,6 @@ public partial struct OrbitCameraSimulationSystem : ISystem
         [ReadOnly] public ComponentLookup<CustomGravity> CustomGravityLookup;
 
         void Execute(
-            Entity entity,
             ref LocalTransform localTransform,
             ref OrbitCamera orbitCamera,
             in OrbitCameraControl cameraControl,
@@ -281,6 +280,7 @@ public partial struct OrbitCameraLateUpdateSystem : ISystem
         {
             float elapsedTime = (float)TimeData.ElapsedTime;
             
+            
             if (LocalToWorldLookup.TryGetComponent(cameraControl.FollowedCharacterEntity, out LocalToWorld characterLTW) &&
                 CustomGravityLookup.TryGetComponent(cameraControl.FollowedCharacterEntity, out CustomGravity characterCustomGravity) &&
                 PlatformerCharacterComponentLookup.TryGetComponent(cameraControl.FollowedCharacterEntity, out PlatformerCharacterComponent characterComponent) &&
@@ -416,8 +416,10 @@ public partial struct OrbitCameraLateUpdateSystem : ISystem
                 var position = orbitCamera.CameraTargetTransform.pos + (-cameraForward * orbitCamera.ObstructedDistance);
 
                 // Manually calculate the LocalToWorld since this is updating after the Transform systems, and the LtW is what rendering uses
-                LocalToWorld cameraLocalToWorld = new LocalToWorld();
-                cameraLocalToWorld.Value = new float4x4(cameraRotation, position);
+                var cameraLocalToWorld = new LocalToWorld
+                {
+                    Value = new float4x4(cameraRotation, position)
+                };
                 LocalToWorldLookup[entity] = cameraLocalToWorld;
             }
         }

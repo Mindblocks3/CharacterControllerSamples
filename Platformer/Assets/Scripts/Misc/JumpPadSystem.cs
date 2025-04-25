@@ -39,9 +39,8 @@ public partial struct JumpPadSystem : ISystem
         
         void Execute(Entity entity, in LocalTransform localTransform, in JumpPad jumpPad, in DynamicBuffer<StatefulTriggerEvent> triggerEventsBuffer)
         {
-            for (int i = 0; i < triggerEventsBuffer.Length; i++)
+            foreach (var triggerEvent in triggerEventsBuffer)
             {
-                StatefulTriggerEvent triggerEvent = triggerEventsBuffer[i];
                 Entity otherEntity = triggerEvent.GetOtherEntity(entity);
 
                 // If a character has entered the trigger, add jumppad power to it

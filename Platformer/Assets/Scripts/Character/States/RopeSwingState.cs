@@ -41,6 +41,7 @@ public struct RopeSwingState : IPlatformerCharacterState
         CustomGravity customGravity = aspect.CustomGravity.ValueRO;
         quaternion characterRotation = aspect.CharacterAspect.LocalTransform.ValueRW.Rotation;
         
+        aspect.SetCapsuleGeometry(character.StandingGeometry.ToCapsuleGeometry());
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, false, false);
 
         // Move

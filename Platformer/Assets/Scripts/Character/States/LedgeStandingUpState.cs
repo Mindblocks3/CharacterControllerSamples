@@ -43,7 +43,9 @@ public struct LedgeStandingUpState : IPlatformerCharacterState
     public void OnStatePhysicsUpdate(ref PlatformerCharacterUpdateContext context, ref KinematicCharacterUpdateContext baseContext, in PlatformerCharacterAspect aspect)
     {
         ref float3 characterPosition = ref aspect.CharacterAspect.LocalTransform.ValueRW.Position;
+        ref PlatformerCharacterComponent character = ref aspect.Character.ValueRW;
         
+        aspect.SetCapsuleGeometry(character.StandingGeometry.ToCapsuleGeometry());
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, false);
 
         // TODO: root motion standing up

@@ -26,6 +26,7 @@ public struct CrouchedState : IPlatformerCharacterState
         ref KinematicCharacterBody characterBody = ref aspect.CharacterAspect.CharacterBody.ValueRW;
         ref PlatformerCharacterComponent character = ref aspect.Character.ValueRW;
         ref PlatformerCharacterControl characterControl = ref aspect.CharacterControl.ValueRW;
+        aspect.SetCapsuleGeometry(character.CrouchingGeometry.ToCapsuleGeometry());
 
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, true);
 

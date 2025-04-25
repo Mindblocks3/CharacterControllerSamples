@@ -28,6 +28,7 @@ public struct GroundMoveState : IPlatformerCharacterState
         ref PlatformerCharacterComponent character = ref aspect.Character.ValueRW;
         ref PlatformerCharacterControl characterControl = ref aspect.CharacterControl.ValueRW;
         
+        aspect.SetCapsuleGeometry(character.StandingGeometry.ToCapsuleGeometry());
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, true);
 
         // Rotate move input and velocity to take into account parent rotation

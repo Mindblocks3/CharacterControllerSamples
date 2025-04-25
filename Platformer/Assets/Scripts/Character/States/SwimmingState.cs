@@ -38,6 +38,9 @@ public struct SwimmingState : IPlatformerCharacterState
 
     public void OnStatePhysicsUpdate(ref PlatformerCharacterUpdateContext context, ref KinematicCharacterUpdateContext baseContext, in PlatformerCharacterAspect aspect)
     {
+        ref PlatformerCharacterComponent character = ref aspect.Character.ValueRW;
+        aspect.SetCapsuleGeometry(character.SwimmingGeometry.ToCapsuleGeometry());
+
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, true);
         
         PreMovementUpdate(ref context, ref baseContext, in aspect);

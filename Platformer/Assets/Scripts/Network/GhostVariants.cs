@@ -11,6 +11,7 @@ public partial class DefaultVariantSystem : DefaultVariantSystemBase
         defaultVariants.Add(typeof(KinematicCharacterBody), Rule.ForAll(typeof(KinematicCharacterBody_DefaultVariant)));
         defaultVariants.Add(typeof(CharacterInterpolation), Rule.ForAll(typeof(CharacterInterpolation_GhostVariant)));
         defaultVariants.Add(typeof(TrackedTransform), Rule.ForAll(typeof(TrackedTransform_DefaultVariant)));
+        defaultVariants.Add(typeof(KinematicCharacterProperties), Rule.ForAll(typeof(KinematicCharacterProperties_DefaultVariant)));
     }
 }
 
@@ -32,6 +33,20 @@ public struct KinematicCharacterBody_DefaultVariant
     public float3 ParentLocalAnchorPoint;
     [GhostField()]
     public float3 ParentVelocity;
+}
+
+[GhostComponentVariation(typeof(KinematicCharacterProperties))]
+[GhostComponent()]
+public struct KinematicCharacterProperties_DefaultVariant
+{
+    [GhostField()]
+    public bool EvaluateGrounding;
+    
+    [GhostField()]
+    public bool DetectMovementCollisions;
+    
+    [GhostField()]
+    public bool DecollideFromOverlaps;
 }
 
 // Character interpolation must only exist on predicted clients:

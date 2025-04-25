@@ -37,6 +37,7 @@ public struct RollingState : IPlatformerCharacterState
         ref PlatformerCharacterComponent character = ref aspect.Character.ValueRW;
         ref PlatformerCharacterControl characterControl = ref aspect.CharacterControl.ValueRW;
         CustomGravity customGravity = aspect.CustomGravity.ValueRO;
+        aspect.SetCapsuleGeometry(character.RollingGeometry.ToCapsuleGeometry());
 
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, false);
 

@@ -20,6 +20,7 @@ public struct PlatformerCharacterStateMachine : IComponentData
     public AirMoveState AirMoveState;
     public WallRunState WallRunState;
     public RollingState RollingState;
+    [GhostField]
     public ClimbingState ClimbingState;
     public DashingState DashingState;
     public SwimmingState SwimmingState;

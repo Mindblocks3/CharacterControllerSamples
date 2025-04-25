@@ -53,6 +53,7 @@ public struct LedgeGrabState : IPlatformerCharacterState
         ref float3 characterPosition = ref aspect.CharacterAspect.LocalTransform.ValueRW.Position;
         ref quaternion characterRotation = ref aspect.CharacterAspect.LocalTransform.ValueRW.Rotation;
         
+        aspect.SetCapsuleGeometry(character.StandingGeometry.ToCapsuleGeometry());
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, false);
 
         DetectedMustExitLedge = false;

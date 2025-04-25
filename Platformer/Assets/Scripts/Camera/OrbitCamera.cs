@@ -38,9 +38,12 @@ public struct OrbitCamera : IComponentData
     
     public Entity ActiveCameraTarget;
     public Entity PreviousCameraTarget;
+    [GhostField]
     public float CameraTargetTransitionStartTime;
     public RigidTransform CameraTargetTransform;
+    [GhostField]
     public RigidTransform CameraTargetTransitionFromTransform;
+    [GhostField]
     public bool PreviousCalculateUpFromGravity;
 }
 

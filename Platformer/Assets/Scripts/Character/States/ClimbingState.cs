@@ -1,12 +1,14 @@
 using Unity.Entities;
 using Unity.CharacterController;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Physics;
 using Unity.Physics.Authoring;
 using Unity.Transforms;
 
 public struct ClimbingState : IPlatformerCharacterState
 {
+    [GhostField]
     public float3 LastKnownClimbNormal;
 
     private bool _foundValidClimbSurface;
@@ -47,6 +49,7 @@ public struct ClimbingState : IPlatformerCharacterState
         ref PlatformerCharacterControl characterControl = ref aspect.CharacterControl.ValueRW;
         ref float3 characterPosition = ref aspect.CharacterAspect.LocalTransform.ValueRW.Position;
         
+        aspect.SetCapsuleGeometry(character.ClimbingGeometry.ToCapsuleGeometry());
         aspect.HandlePhysicsUpdatePhase1(ref context, ref baseContext, true, false);
 
         // Quad climbing surface detection raycasts
