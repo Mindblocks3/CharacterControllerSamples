@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 599806478469222039}
   - component: {fileID: 190947569563120652}
   - component: {fileID: 7030348021050218615}
+  - component: {fileID: 5630704116993994772}
   m_Layer: 0
   m_Name: MovingPlatform (3)
   m_TagString: Untagged
@@ -364,3 +365,26 @@ MonoBehaviour:
   UsePreSerialization: 0
   RollbackPredictedSpawnedGhostState: 0
   RollbackPredictionOnStructuralChanges: 1
+--- !u!114 &5630704116993994772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 262782689240289255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfdaa6c06fe64fbda2b16e07a4ee0b25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ComponentOverrides:
+  - FullTypeName: Unity.Physics.PhysicsVelocity
+    EntityIndex: 0
+    PrefabType: -1
+    SendTypeOptimization: -1
+    VariantHash: 10188360468653526834
+  - FullTypeName: Unity.Transforms.LocalTransform
+    EntityIndex: 0
+    PrefabType: -1
+    SendTypeOptimization: -1
+    VariantHash: 17312028693704544116
