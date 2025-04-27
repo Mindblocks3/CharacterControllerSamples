@@ -315,7 +315,7 @@ MonoBehaviour:
     AirJumpSpeed: 10
     WallRunJumpSpeed: 12
     JumpHeldAcceleration: 75
-    MaxHeldJumpTime: 0.1
+    MaxHeldJumpTime: 0.15
     MaxUngroundedJumps: 1
     JumpAfterUngroundedGraceTime: 0.1
     JumpBeforeGroundedGraceTime: 0.1
