@@ -354,15 +354,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DefaultGhostMode: 1
-  SupportedGhostModes: 3
+  SupportedGhostModes: 2
   OptimizationMode: 0
   Importance: 1
+  MaxSendRate: 1
   prefabId: 9860724a5ad7942ca976365b1096d0f7
   HasOwner: 0
   SupportAutoCommandTarget: 1
   TrackInterpolationDelay: 0
   GhostGroup: 0
   UsePreSerialization: 0
+  UseSingleBaseline: 0
   RollbackPredictedSpawnedGhostState: 0
   RollbackPredictionOnStructuralChanges: 1
 --- !u!114 &5630704116993994772
